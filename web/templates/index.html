@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Rosa dos Ventos</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: sans-serif;
+      padding-top: 30px;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    #compass {
+      position: relative;
+      width: 300px;
+      height: 300px;
+      border: 2px solid #333;
+      border-radius: 50%;
+      background: #fafafa;
+    }
+    /* Marcadores N, NE, E, ... */
+    .marker {
+      position: absolute;
+      font-size: 1em;
+      font-weight: bold;
+    }
+    .marker[data-dir="N"]  { top: 5%;   left: 50%; transform: translateX(-50%); }
+    .marker[data-dir="NE"] { top: 12%;  right: 12%; }
+    .marker[data-dir="E"]  { top: 50%;  right: 5%;  transform: translateY(-50%); }
+    .marker[data-dir="SE"] { bottom: 12%; right: 12%; }
+    .marker[data-dir="S"]  { bottom: 5%;  left: 50%; transform: translateX(-50%); }
+    .marker[data-dir="SW"] { bottom: 12%; left: 12%; }
+    .marker[data-dir="W"]  { top: 50%;  left: 5%;  transform: translateY(-50%); }
+    .marker[data-dir="NW"] { top: 12%;  left: 12%; }
+
+    /* Agulha */
+    #needle {
+      position: absolute;
+      width: 4px;
+      height: 45%;
+      background: red;
+      top: 5%;
+      left: 50%;
+      transform-origin: bottom center;
+      transform: rotate(0deg);
+      transition: transform 0.3s ease;
+    }
+    #current-dir {
+      margin-top: 15px;
+      font-size: 1.2em;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Rosa dos Ventos</h1>
+  <div id="compass">
+    <!-- Marcadores -->
+    <div class="marker" data-dir="N">N</div>
+    <div class="marker" data-dir="NE">NE</div>
+    <div class="marker" data-dir="E">E</div>
+    <div class="marker" data-dir="SE">SE</div>
+    <div class="marker" data-dir="S">S</div>
+    <div class="marker" data-dir="SW">SW</div>
+    <div class="marker" data-dir="W">W</div>
+    <div class="marker" data-dir="NW">NW</div>
+    <!-- Agulha -->
+    <div id="needle"></div>
+  </div>
+  <div id="current-dir">Direção: —</div>
+
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script>
+    const socket   = io();
+    const needle   = document.getElementById('needle');
+    const label    = document.getElementById('current-dir');
+
+    // Mapeia direção para ângulo (0° = Norte, gira sentido horário)
+    const angles = {
+      "Norte":     0,
+      "Nordeste":  45,
+      "Leste":     90,
+      "Sudeste":   135,
+      "Sul":       180,
+      "Sudoeste":  225,
+      "Oeste":     270,
+      "Noroeste":  315
+    };
+
+    socket.on('compass', data => {
+      const dir = data.dir;
+      const ang = angles[dir] ?? 0;
+      needle.style.transform = `rotate(${ang}deg)`;
+      label.textContent = `Direção: ${dir}`;
+    });
+  </script>
+
+</body>
+</html>
